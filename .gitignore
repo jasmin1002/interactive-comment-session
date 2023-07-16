@@ -1,4 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+public/design/
+src/App-v1.js
+README copy.md
+README-template.md
 
 # dependencies
 /node_modules
