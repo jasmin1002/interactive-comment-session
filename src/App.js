@@ -94,7 +94,6 @@ function CommentList({
   selectedRecipient,
   replyingTo,
   onSelectRecipient,
-  // onCreateComment,
   addReply,
 }) {
   const [editMode, setEditMode] = useState(false);
@@ -107,18 +106,41 @@ function CommentList({
       {comments.map((comment) => (
         <React.Fragment key={comment.id}>
           <Comment {...comment} comments={comments} editMode={editMode}>
-            {comment.user.username !== "juliusomo" ? (
-              <ReplyButton
-                id={comment.id}
-                list={comments}
-                onSelectRecipient={onSelectRecipient}
-              />
-            ) : (
-              <>
-                <DeleteButton />
-                <EditButton onEdit={handleEdit} />
-              </>
-            )}
+            <CommentVoteScore score={comment.score} />
+            <CommentDetail>
+              <CommentTop>
+                <Profile user={comment.user} />
+                <Timestamp createdAt={comment.createdAt} />
+                {comment.user.username !== "juliusomo" ? (
+                  <ReplyButton
+                    id={comment.id}
+                    list={comments}
+                    onSelectRecipient={onSelectRecipient}
+                  />
+                ) : (
+                  <>
+                    <DeleteButton />
+                    <EditButton onEdit={handleEdit} />
+                  </>
+                )}
+              </CommentTop>
+              {editMode && comment.user.username === "juliusomo" ? (
+                <EditComment
+                  type={className}
+                  replyingTo={comment.replyingTo}
+                  content={comment.content}
+                />
+              ) : (
+                <CommentMessage>
+                  <p>
+                    <span className="replying-to">
+                      {comment.replyingTo ? `@${comment.replyingTo} ` : ""}
+                    </span>
+                    {comment.content}
+                  </p>
+                </CommentMessage>
+              )}
+            </CommentDetail>
           </Comment>
           {comment.id === selectedRecipient && (
             <PostComment type="post-reply">
@@ -127,7 +149,6 @@ function CommentList({
                 type={"post-reply"}
                 parentID={comment.id}
                 replyingTo={replyingTo}
-                // onCreateComment={onCreateComment}
                 addComment={addReply}
                 comments={comments}
               />
@@ -152,43 +173,8 @@ function CommentList({
   );
 }
 
-function Comment({
-  id,
-  score,
-  content,
-  createdAt,
-  user,
-  replies,
-  replyingTo,
-  comments,
-  editMode,
-  children,
-  onCreateComment,
-}) {
-  return (
-    <li className="comment">
-      <CommentVoteScore score={score} />
-      <section className="comment-detail">
-        <CommentTop>
-          <Profile user={user} />
-          <Timestamp createdAt={createdAt} />
-          {children}
-        </CommentTop>
-        {editMode && user.username === "juliusomo" ? (
-          <EditComment replyingTo={replyingTo} content={content} />
-        ) : (
-          <CommentMessage>
-            <p>
-              <span className="replying-to">
-                {replyingTo ? `@${replyingTo} ` : ""}
-              </span>
-              {content}
-            </p>
-          </CommentMessage>
-        )}
-      </section>
-    </li>
-  );
+function Comment({ children }) {
+  return <li className="comment">{children}</li>;
 }
 
 function CommentVoteScore({ score }) {
@@ -217,6 +203,10 @@ function CommentVoteScore({ score }) {
       </button>
     </div>
   );
+}
+
+function CommentDetail({ children }) {
+  return <section className="comment-detail">{children}</section>;
 }
 
 function Timestamp({ createdAt }) {
@@ -261,14 +251,7 @@ function PostComment({ type, children }) {
   return <section className={type}>{children}</section>;
 }
 
-function CommentForm({
-  type,
-  replyingTo,
-  parentID,
-  comments,
-  addComment,
-  onCreateComment,
-}) {
+function CommentForm({ type, replyingTo, parentID, addComment }) {
   const [content, setContent] = useState("");
 
   function handleChange(evt) {
@@ -360,8 +343,10 @@ function DeleteButton({ id, list, onSelectRecipient }) {
   );
 }
 
-function EditComment({ replyingTo, content }) {
-  const [addonContent, setAddonContent] = useState(`@${replyingTo} ${content}`);
+function EditComment({ type, replyingTo, content }) {
+  const [addonContent, setAddonContent] = useState(
+    type === "reply" ? `@${replyingTo} ${content}` : content
+  );
 
   function handleChange(evt) {
     setAddonContent(evt.target.value);
