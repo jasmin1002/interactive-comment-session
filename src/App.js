@@ -7,7 +7,8 @@ const { currentUser: user, comments: posts } = data;
 
 export default function App() {
   const [comments, setComments] = useState(posts);
-  const [selectedRecipient, setSelectedRecipient] = useState(null);
+  const [selectedID, setSelectedID] = useState(null);
+  const [editID, setEditID] = useState(null);
   const [recipientName, setRecipientName] = useState("");
 
   function addComment(comment) {
@@ -29,50 +30,30 @@ export default function App() {
           : comment
       )
     );
-    // parentID = comments.find((comment) =>
-    //   comment.replies.find((reply) => reply.id === id)
-    // )?.id;
-
-    // if (parentID)
-    //   setComments(
-    //     comments.map((comment) =>
-    //       comment.id === parentID
-    //         ? { ...comment, replies: [...comment.replies, reply] }
-    //         : comment
-    //     )
-    //   );
-    setSelectedRecipient(null);
+    setSelectedID(null);
   }
 
-  function handleSelectRecipient(id, posts) {
+  function handleSelectID(id, posts) {
     const username = posts.find((post) => post.id === id).user.username;
     // setSelectedRecipient((selected) => (id === selected ? null : id));
-    setSelectedRecipient(id);
+    setSelectedID(id);
     setRecipientName(username);
   }
 
-  // function createComment(parentID, reply) {
-  //   const modifiedReply = { ...reply, user };
-
-  //   setComments((posts) => {
-  //     const replies = [
-  //       ...posts?.find((post) => post.id === parentID)?.replies,
-  //       modifiedReply,
-  //     ];
-
-  //     return posts.map((post) =>
-  //       post.id === parentID ? { ...post, replies } : post
-  //     );
-  //   });
-  // }
+  function handleEdit(id) {
+    console.log(id);
+    setEditID(id);
+  }
 
   return (
     <main className="app">
       <CommentList
         comments={comments}
-        selectedRecipient={selectedRecipient}
+        selectedID={selectedID}
+        editID={editID}
         replyingTo={recipientName}
-        onSelectRecipient={handleSelectRecipient}
+        onSelectID={handleSelectID}
+        onEdit={handleEdit}
         // onCreateComment={createComment}
         addReply={addReply}
       />
@@ -91,21 +72,23 @@ export default function App() {
 function CommentList({
   comments,
   className,
-  selectedRecipient,
+  selectedID,
+  editID,
   replyingTo,
-  onSelectRecipient,
+  onSelectID,
+  onEdit,
   addReply,
 }) {
-  const [editMode, setEditMode] = useState(false);
-  function handleEdit() {
-    setEditMode(true);
-  }
+  // const [editMode, setEditMode] = useState(false);
+  // function handleEdit() {
+  //   setEditMode(true);
+  // }
 
   return (
     <ul className={`comment-list ${className ? className : ""}`}>
       {comments.map((comment) => (
         <React.Fragment key={comment.id}>
-          <Comment {...comment} comments={comments} editMode={editMode}>
+          <Comment {...comment} comments={comments}>
             <CommentVoteScore score={comment.score} />
             <CommentDetail>
               <CommentTop>
@@ -115,16 +98,17 @@ function CommentList({
                   <ReplyButton
                     id={comment.id}
                     list={comments}
-                    onSelectRecipient={onSelectRecipient}
+                    onSelectID={onSelectID}
                   />
                 ) : (
                   <>
                     <DeleteButton />
-                    <EditButton onEdit={handleEdit} />
+                    <EditButton id={comment.id} onEdit={onEdit} />
                   </>
                 )}
               </CommentTop>
-              {editMode && comment.user.username === "juliusomo" ? (
+              {comment.id === editID &&
+              comment.user.username === "juliusomo" ? (
                 <EditComment
                   type={className}
                   replyingTo={comment.replyingTo}
@@ -142,7 +126,7 @@ function CommentList({
               )}
             </CommentDetail>
           </Comment>
-          {comment.id === selectedRecipient && (
+          {comment.id === selectedID && (
             <PostComment type="post-reply">
               <Avatar user={user} className="user-avatar" />
               <CommentForm
@@ -158,10 +142,12 @@ function CommentList({
             <CommentList
               comments={comment.replies}
               className="reply"
-              selectedRecipient={selectedRecipient}
+              selectedID={selectedID}
+              editID={editID}
               replyingTo={replyingTo}
-              onSelectRecipient={onSelectRecipient}
+              onSelectID={onSelectID}
               // onCreateComment={onCreateComment}
+              onEdit={onEdit}
               addReply={addReply}
             />
           ) : (
@@ -302,13 +288,10 @@ function CommentForm({ type, replyingTo, parentID, addComment }) {
   );
 }
 
-function ReplyButton({ id, list, onSelectRecipient }) {
+function ReplyButton({ id, list, onSelectID }) {
   // console.log(list);
   return (
-    <button
-      className="btn btn-reply"
-      onClick={() => onSelectRecipient(id, list)}
-    >
+    <button className="btn btn-reply" onClick={() => onSelectID(id, list)}>
       <svg xmlns="http://www.w3.org/2000/svg" className="icon reply-icon">
         <path d="M.227 4.316 5.04.16a.657.657 0 0 1 1.085.497v2.189c4.392.05 7.875.93 7.875 5.093 0 1.68-1.082 3.344-2.279 4.214-.373.272-.905-.07-.767-.51 1.24-3.964-.588-5.017-4.829-5.078v2.404c0 .566-.664.86-1.085.496L.227 5.31a.657.657 0 0 1 0-.993Z" />
       </svg>
@@ -317,9 +300,9 @@ function ReplyButton({ id, list, onSelectRecipient }) {
   );
 }
 
-function EditButton({ onEdit }) {
+function EditButton({ id, onEdit }) {
   return (
-    <button className="btn btn-edit" onClick={onEdit}>
+    <button className="btn btn-edit" onClick={() => onEdit(id)}>
       <svg xmlns="http://www.w3.org/2000/svg" className="icon edit-icon">
         <path d="M13.479 2.872 11.08.474a1.75 1.75 0 0 0-2.327-.06L.879 8.287a1.75 1.75 0 0 0-.5 1.06l-.375 3.648a.875.875 0 0 0 .875.954h.078l3.65-.333c.399-.04.773-.216 1.058-.499l7.875-7.875a1.68 1.68 0 0 0-.061-2.371Zm-2.975 2.923L8.159 3.449 9.865 1.7l2.389 2.39-1.75 1.706Z" />
       </svg>
@@ -328,13 +311,10 @@ function EditButton({ onEdit }) {
   );
 }
 
-function DeleteButton({ id, list, onSelectRecipient }) {
+function DeleteButton({ id, list, onSelectID }) {
   // console.log(list);
   return (
-    <button
-      className="btn btn-delete"
-      onClick={() => onSelectRecipient(id, list)}
-    >
+    <button className="btn btn-delete" onClick={() => onSelectID(id, list)}>
       <svg xmlns="http://www.w3.org/2000/svg" className="icon delete-icon">
         <path d="M1.167 12.448c0 .854.7 1.552 1.555 1.552h6.222c.856 0 1.556-.698 1.556-1.552V3.5H1.167v8.948Zm10.5-11.281H8.75L7.773 0h-3.88l-.976 1.167H0v1.166h11.667V1.167Z" />
       </svg>
