@@ -280,8 +280,10 @@ function CommentForm({
 
   function handleSubmit(evt) {
     evt.preventDefault();
-    const id = Date.now();
 
+    if (content === "" || content === " ") return;
+
+    const id = Date.now();
     const comment = {
       id,
       score: 0,
