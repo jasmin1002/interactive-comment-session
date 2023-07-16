@@ -1,5 +1,5 @@
 import React from "react";
-import { Fragment, useState, useRef } from "react";
+import { Fragment, useState } from "react";
 
 import data from "./data.json";
 
