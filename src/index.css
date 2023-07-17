@@ -379,7 +379,7 @@ body {
   }
 }
 
-@media screen and (width <= 600px) {
+@media screen and (width <= 37.5em) {
   body {
     padding: 0;
   }
@@ -457,19 +457,19 @@ body {
   }
 }
 
-@media screen and (601px <= width <= 900px) {
+@media screen and (37.5625rem <= width <= 56.25em) {
   .app {
     width: calc(80% + 4rem);
   }
 }
 
-@media screen and (901px <= width <= 1130px) {
+@media screen and (56.3125em <= width <= 70.625em) {
   .app {
     width: calc(70% + 4rem);
   }
 }
 
-@media screen and (width <= 375px) {
+@media screen and (width <= 23.4375em) {
   .app {
     width: 100%;
     padding: 1.5rem 1rem;
@@ -512,7 +512,7 @@ body {
   }
 }
 
-@media screen and (width <= 320px) {
+@media screen and (width <= 20em) {
   .timestamp {
     font-size: 1.45rem;
     text-overflow: ellipsis;
