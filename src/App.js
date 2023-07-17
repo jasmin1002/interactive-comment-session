@@ -33,6 +33,22 @@ export default function App() {
     setSelectedID(null);
   }
 
+  function editComment(id, content) {
+    setComments(
+      comments.map((comment) =>
+        comment.id === id
+          ? { ...comment, content }
+          : {
+              ...comment,
+              replies: comment.replies.map((reply) =>
+                reply.id === id ? { ...reply, content } : reply
+              ),
+            }
+      )
+    );
+    setEditID(null);
+  }
+
   function handleSelectID(id, posts) {
     const username = posts.find((post) => post.id === id).user.username;
     // setSelectedRecipient((selected) => (id === selected ? null : id));
@@ -41,7 +57,6 @@ export default function App() {
   }
 
   function handleEdit(id) {
-    console.log(id);
     setEditID(id);
   }
 
@@ -54,7 +69,7 @@ export default function App() {
         replyingTo={recipientName}
         onSelectID={handleSelectID}
         onEdit={handleEdit}
-        // onCreateComment={createComment}
+        editComment={editComment}
         addReply={addReply}
       />
       <PostComment type="post-comment">
@@ -78,12 +93,8 @@ function CommentList({
   onSelectID,
   onEdit,
   addReply,
+  editComment,
 }) {
-  // const [editMode, setEditMode] = useState(false);
-  // function handleEdit() {
-  //   setEditMode(true);
-  // }
-
   return (
     <ul className={`comment-list ${className ? className : ""}`}>
       {comments.map((comment) => (
@@ -110,9 +121,11 @@ function CommentList({
               {comment.id === editID &&
               comment.user.username === "juliusomo" ? (
                 <EditComment
+                  id={editID}
                   type={className}
                   replyingTo={comment.replyingTo}
                   content={comment.content}
+                  editComment={editComment}
                 />
               ) : (
                 <CommentMessage>
@@ -146,9 +159,9 @@ function CommentList({
               editID={editID}
               replyingTo={replyingTo}
               onSelectID={onSelectID}
-              // onCreateComment={onCreateComment}
               onEdit={onEdit}
               addReply={addReply}
+              editComment={editComment}
             />
           ) : (
             ""
@@ -289,7 +302,6 @@ function CommentForm({ type, replyingTo, parentID, addComment }) {
 }
 
 function ReplyButton({ id, list, onSelectID }) {
-  // console.log(list);
   return (
     <button className="btn btn-reply" onClick={() => onSelectID(id, list)}>
       <svg xmlns="http://www.w3.org/2000/svg" className="icon reply-icon">
@@ -312,7 +324,6 @@ function EditButton({ id, onEdit }) {
 }
 
 function DeleteButton({ id, list, onSelectID }) {
-  // console.log(list);
   return (
     <button className="btn btn-delete" onClick={() => onSelectID(id, list)}>
       <svg xmlns="http://www.w3.org/2000/svg" className="icon delete-icon">
@@ -323,25 +334,31 @@ function DeleteButton({ id, list, onSelectID }) {
   );
 }
 
-function EditComment({ type, replyingTo, content }) {
-  const [addonContent, setAddonContent] = useState(
+function EditComment({ id, type, replyingTo, content, editComment }) {
+  const [newContent, updateContent] = useState(
     type === "reply" ? `@${replyingTo} ${content}` : content
   );
 
   function handleChange(evt) {
-    setAddonContent(evt.target.value);
+    updateContent(evt.target.value);
   }
 
   function handleSubmit(evt) {
     evt.preventDefault();
-    console.log(addonContent.split(" ").splice(1).join(" "));
+
+    editComment(
+      id,
+      newContent.includes(replyingTo)
+        ? newContent.split(" ").splice(1).join(" ")
+        : newContent
+    );
   }
 
   return (
     <form className="edit-comment" onSubmit={handleSubmit}>
       <textarea
         className="comment-input"
-        value={addonContent}
+        value={newContent}
         onChange={handleChange}
         placeholder="Add a comment..."
       />
