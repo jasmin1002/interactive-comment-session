@@ -316,7 +316,8 @@ body {
   transition: all 0.3s ease-in-out;
 }
 
-.btn-submit {
+.btn-submit,
+.btn-update {
   align-self: flex-start;
   padding: 1rem 2.5rem;
   background-color: var(--blue-primary);
@@ -329,7 +330,8 @@ body {
   position: relative;
 }
 
-.btn-submit:hover {
+.btn-submit:hover,
+.btn-update:hover {
   background-color: var(--grayish-blue-primary);
   transition: background-color 0.3s ease-in-out;
 }
@@ -372,11 +374,128 @@ body {
   fill: var(--btn-inactive);
 }
 
+.timestamp,
+.btn-delete {
+  margin-right: 0 !important;
+}
+
 @keyframes ripple {
   to {
     transform: scale(7);
     opacity: 0.02;
   }
+}
+
+/* @media screen and (width <= 37.5em) {
+  body {
+    padding: 0;
+  }
+
+  .app {
+    width: 100%;
+  }
+
+  .comment {
+    grid-template-rows: auto;
+    column-gap: 0;
+    row-gap: 2.8rem;
+    position: relative;
+  }
+
+  .post-reply,
+  .post-comment {
+    grid-template-rows: auto auto;
+    grid-template-columns: 1fr;
+    position: relative;
+  }
+
+  .comment-form {
+    column-gap: 0;
+    grid-row-start: 1;
+  }
+
+  .user-avatar {
+    grid-row-start: -1;
+    margin-left: 0;
+  }
+
+  .comment-top {
+    margin-bottom: 1.75rem;
+  }
+
+  .votes {
+    grid-row-start: -1;
+    flex-direction: row;
+    margin-right: auto;
+  }
+
+  .votes > p {
+    padding: 0rem 1.5rem;
+    margin: 0;
+  }
+
+  .btn-incr,
+  .btn-desc {
+    width: 4.4rem;
+    height: 4.4rem;
+    aspect-ratio: 1;
+  }
+
+  .btn-reply,
+  .btn-edit,
+  .btn-delete,
+  .btn-submit {
+    position: absolute;
+    bottom: 3rem;
+    right: 3rem;
+  }
+
+  .btn-submit {
+    margin-bottom: -1rem;
+  }
+
+  .btn-delete {
+    right: 8rem;
+  }
+
+  .reply {
+    margin-left: 0;
+    padding-left: 2rem;
+  }
+} */
+
+/* @media screen and (37.5625rem <= width <= 56.25em) {
+  .app {
+    width: calc(80% + 4rem);
+  }
+} */
+
+@media screen and (56.3125em <= width <= 70.625em) {
+  .app {
+    width: calc(70% + 4rem);
+  }
+
+  /* .timestamp,
+  .btn-delete {
+    margin-right: 0 !important;
+  } */
+}
+
+@media screen and (37.5625rem <= width <= 56.25em) {
+  .app {
+    width: calc(80% + 4rem);
+  }
+}
+
+@media screen and (width <= 50em) {
+  .reply .comment-form {
+    grid-template-columns: 1fr;
+  }
+
+  /* .timestamp,
+  .btn-delete {
+    margin-right: 0 !important;
+  } */
 }
 
 @media screen and (width <= 37.5em) {
@@ -454,18 +573,6 @@ body {
   .reply {
     margin-left: 0;
     padding-left: 2rem;
-  }
-}
-
-@media screen and (37.5625rem <= width <= 56.25em) {
-  .app {
-    width: calc(80% + 4rem);
-  }
-}
-
-@media screen and (56.3125em <= width <= 70.625em) {
-  .app {
-    width: calc(70% + 4rem);
   }
 }
 
