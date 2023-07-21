@@ -6,14 +6,15 @@ import data from "./data.json";
 const { currentUser: user, comments: posts } = data;
 
 export default function App() {
-  const [comments, setComments] = useState(posts);
+  const [comments, addComments] = useState(posts);
   const [selectedID, setSelectedID] = useState(null);
   const [editID, setEditID] = useState(null);
   const [recipientName, setRecipientName] = useState("");
+  // const [score, setScore] = useState(0);
 
   function addComment(comment) {
     const updateComments = [...comments, comment];
-    setComments(updateComments);
+    addComments(updateComments);
   }
 
   function addReply(reply, id) {
@@ -23,7 +24,7 @@ export default function App() {
 
     parentID = parentID ? parentID?.id : id;
 
-    setComments(
+    addComments(
       comments.map((comment) =>
         comment.id === parentID
           ? { ...comment, replies: [...comment.replies, reply] }
@@ -34,7 +35,7 @@ export default function App() {
   }
 
   function editComment(id, content) {
-    setComments(
+    addComments(
       comments.map((comment) =>
         comment.id === id
           ? { ...comment, content }
@@ -60,6 +61,32 @@ export default function App() {
     setEditID(id);
   }
 
+  function updateCommentVotes(evt, id) {
+    const step = evt.target.classList.contains("btn-desc") ? -1 : 1;
+
+    addComments((comments) =>
+      comments.map((comment) =>
+        comment.id === id
+          ? { ...comment, score: comment.score + step }
+          : {
+              ...comment,
+              replies: comment.replies.map((reply) =>
+                reply.id === id
+                  ? { ...reply, score: reply.score + step }
+                  : reply
+              ),
+            }
+      )
+    );
+  }
+
+  React.useEffect(
+    function () {
+      addComments((comments) => comments.sort((a, b) => b.score - a.score));
+    },
+    [comments]
+  );
+
   return (
     <main className="app">
       <CommentList
@@ -71,6 +98,7 @@ export default function App() {
         onEdit={handleEdit}
         editComment={editComment}
         addReply={addReply}
+        updateVotes={updateCommentVotes}
       />
       <PostComment type="post-comment">
         <Avatar user={user} className="user-avatar" />
@@ -94,13 +122,18 @@ function CommentList({
   onEdit,
   addReply,
   editComment,
+  updateVotes,
 }) {
   return (
     <ul className={`comment-list ${className ? className : ""}`}>
       {comments.map((comment) => (
         <React.Fragment key={comment.id}>
           <Comment {...comment} comments={comments}>
-            <CommentVoteScore score={comment.score} />
+            <CommentVoteScore
+              score={comment.score}
+              id={comment.id}
+              updateVotes={updateVotes}
+            />
             <CommentDetail>
               <CommentTop>
                 <Profile user={comment.user} />
@@ -162,6 +195,7 @@ function CommentList({
               onEdit={onEdit}
               addReply={addReply}
               editComment={editComment}
+              updateVotes={updateVotes}
             />
           ) : (
             ""
@@ -176,10 +210,10 @@ function Comment({ children }) {
   return <li className="comment">{children}</li>;
 }
 
-function CommentVoteScore({ score }) {
+function CommentVoteScore({ score, id, updateVotes }) {
   return (
     <div className="votes">
-      <button className="btn btn-incr">
+      <button className="btn btn-incr" onClick={(evt) => updateVotes(evt, id)}>
         <svg
           width="11"
           height="11"
@@ -190,7 +224,7 @@ function CommentVoteScore({ score }) {
         </svg>
       </button>
       <p className="votes-score">{score}</p>
-      <button className="btn btn-desc">
+      <button className="btn btn-desc" onClick={(evt) => updateVotes(evt, id)}>
         <svg
           width="11"
           height="3"
@@ -362,7 +396,7 @@ function EditComment({ id, type, replyingTo, content, editComment }) {
         onChange={handleChange}
         placeholder="Add a comment..."
       />
-      <button type="submit" className="btn btn-submit">
+      <button type="submit" className="btn btn-update">
         Update
       </button>
     </form>
