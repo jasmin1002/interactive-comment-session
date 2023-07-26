@@ -113,7 +113,9 @@ export default function App() {
 
   React.useEffect(
     function () {
-      addComments((comments) => comments.sort((a, b) => b.score - a.score));
+      addComments((comments) => [
+        ...comments.sort((a, b) => b.score - a.score),
+      ]);
     },
     [comments]
   );
