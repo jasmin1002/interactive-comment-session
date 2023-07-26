@@ -1,20 +1,24 @@
 import React from "react";
 import { Fragment, useState } from "react";
 
-import data from "./data.json";
+// import data from "./data.json";
 
-const { currentUser: user, comments: posts } = data;
+// const { currentUser: user, comments: posts } = data;
+// let user;
 
 export default function App() {
-  const [comments, addComments] = useState(posts);
+  const [comments, addComments] = useState(
+    () => JSON.parse(localStorage.getItem("comments")) || []
+  );
+  const [currentUser, setCurrentUser] = useState(
+    () => JSON.parse(localStorage.getItem("currentUser")) || ""
+  );
   const [selectedID, setSelectedID] = useState(null);
   const [editID, setEditID] = useState(null);
   const [recipientName, setRecipientName] = useState("");
-  // const [score, setScore] = useState(0);
 
   function addComment(comment) {
-    const updateComments = [...comments, comment];
-    addComments(updateComments);
+    addComments((comments) => [...comments, comment]);
   }
 
   function addReply(reply, id) {
@@ -80,6 +84,33 @@ export default function App() {
     );
   }
 
+  React.useEffect(function () {
+    async function fetchData() {
+      const response = await fetch("/data/data.json");
+      const data = await response.json();
+
+      setCurrentUser(data.currentUser);
+      addComments(data.comments);
+    }
+
+    const storedData = JSON.parse(localStorage.getItem("comments"));
+    if (!storedData) fetchData();
+  }, []);
+
+  React.useEffect(
+    function () {
+      localStorage.setItem("comments", JSON.stringify(comments));
+    },
+    [comments]
+  );
+
+  React.useEffect(
+    function () {
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    },
+    [currentUser]
+  );
+
   React.useEffect(
     function () {
       addComments((comments) => comments.sort((a, b) => b.score - a.score));
@@ -89,31 +120,43 @@ export default function App() {
 
   return (
     <main className="app">
-      <CommentList
-        comments={comments}
-        selectedID={selectedID}
-        editID={editID}
-        replyingTo={recipientName}
-        onSelectID={handleSelectID}
-        onEdit={handleEdit}
-        editComment={editComment}
-        addReply={addReply}
-        updateVotes={updateCommentVotes}
-      />
-      <PostComment type="post-comment">
-        <Avatar user={user} className="user-avatar" />
-        <CommentForm
-          addComment={addComment}
-          parentID={null}
-          comments={comments}
-        />
-      </PostComment>
+      {comments.length === 0 ? (
+        <Loader />
+      ) : (
+        <>
+          <CommentList
+            comments={comments}
+            currentUser={currentUser}
+            selectedID={selectedID}
+            editID={editID}
+            replyingTo={recipientName}
+            onSelectID={handleSelectID}
+            onEdit={handleEdit}
+            editComment={editComment}
+            addReply={addReply}
+            updateVotes={updateCommentVotes}
+          />
+          <PostComment type="post-comment">
+            <Avatar user={currentUser} className="user-avatar" />
+            <CommentForm
+              addComment={addComment}
+              parentID={null}
+              comments={comments}
+            />
+          </PostComment>
+        </>
+      )}
     </main>
   );
 }
 
+function Loader() {
+  return <p>Loading...</p>;
+}
+
 function CommentList({
   comments,
+  currentUser,
   className,
   selectedID,
   editID,
@@ -136,7 +179,7 @@ function CommentList({
             />
             <CommentDetail>
               <CommentTop>
-                <Profile user={comment.user} />
+                <Profile user={comment.user} currentUser={currentUser} />
                 <Timestamp createdAt={comment.createdAt} />
                 {comment.user.username !== "juliusomo" ? (
                   <ReplyButton
@@ -152,7 +195,7 @@ function CommentList({
                 )}
               </CommentTop>
               {comment.id === editID &&
-              comment.user.username === "juliusomo" ? (
+              comment.user.username === currentUser.username ? (
                 <EditComment
                   id={editID}
                   type={className}
@@ -174,7 +217,7 @@ function CommentList({
           </Comment>
           {comment.id === selectedID && (
             <PostComment type="post-reply">
-              <Avatar user={user} className="user-avatar" />
+              <Avatar user={currentUser} className="user-avatar" />
               <CommentForm
                 type={"post-reply"}
                 parentID={comment.id}
@@ -187,6 +230,7 @@ function CommentList({
           {comment.replies?.length > 0 ? (
             <CommentList
               comments={comment.replies}
+              currentUser={currentUser}
               className="reply"
               selectedID={selectedID}
               editID={editID}
@@ -254,7 +298,7 @@ function CommentMessage({ children }) {
   return <article className="comment-description">{children}</article>;
 }
 
-function Profile({ user }) {
+function Profile({ user, currentUser }) {
   return (
     <figure className="user-profile">
       <img
@@ -263,7 +307,7 @@ function Profile({ user }) {
         className="avatar"
       />
       <figcaption className="user-name">{user?.username}</figcaption>
-      {user.username === "juliusomo" && (
+      {user.username === currentUser.username && (
         <span className="current-user">you</span>
       )}
     </figure>
@@ -273,8 +317,8 @@ function Profile({ user }) {
 function Avatar({ user, className }) {
   return (
     <img
-      src={user.image.png}
-      alt={`${user.username}'s pic`}
+      src={user?.image?.png}
+      alt={`${user?.username}'s pic`}
       className={className}
     />
   );
