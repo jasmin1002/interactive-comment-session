@@ -17,11 +17,11 @@ export default function App() {
   const [editID, setEditID] = useState(null);
   const [recipientName, setRecipientName] = useState("");
 
-  function addComment(comment) {
+  function createComment(comment) {
     addComments((comments) => [...comments, comment]);
   }
 
-  function addReply(reply, id) {
+  function createReply(reply, id) {
     let parentID = comments.find((comment) =>
       comment.replies.find((reply) => reply.id === id)
     );
@@ -135,13 +135,13 @@ export default function App() {
             onSelectID={handleSelectID}
             onEdit={handleEdit}
             editComment={editComment}
-            addReply={addReply}
+            createReply={createReply}
             updateVotes={updateCommentVotes}
           />
           <PostComment type="post-comment">
             <Avatar user={currentUser} className="user-avatar" />
             <CommentForm
-              addComment={addComment}
+              createComment={createComment}
               parentID={null}
               comments={comments}
             />
@@ -165,7 +165,7 @@ function CommentList({
   replyingTo,
   onSelectID,
   onEdit,
-  addReply,
+  createReply,
   editComment,
   updateVotes,
 }) {
@@ -183,7 +183,7 @@ function CommentList({
               <CommentTop>
                 <Profile user={comment.user} currentUser={currentUser} />
                 <Timestamp createdAt={comment.createdAt} />
-                {comment.user.username !== "juliusomo" ? (
+                {comment.user.username !== currentUser.username ? (
                   <ReplyButton
                     id={comment.id}
                     list={comments}
@@ -224,7 +224,7 @@ function CommentList({
                 type={"post-reply"}
                 parentID={comment.id}
                 replyingTo={replyingTo}
-                addComment={addReply}
+                createComment={createReply}
                 comments={comments}
               />
             </PostComment>
@@ -239,7 +239,7 @@ function CommentList({
               replyingTo={replyingTo}
               onSelectID={onSelectID}
               onEdit={onEdit}
-              addReply={addReply}
+              createReply={createReply}
               editComment={editComment}
               updateVotes={updateVotes}
             />
@@ -330,7 +330,7 @@ function PostComment({ type, children }) {
   return <section className={type}>{children}</section>;
 }
 
-function CommentForm({ type, replyingTo, parentID, addComment }) {
+function CommentForm({ type, replyingTo, parentID, createComment }) {
   const [content, setContent] = useState("");
 
   function handleChange(evt) {
@@ -362,7 +362,7 @@ function CommentForm({ type, replyingTo, parentID, addComment }) {
       replies: [],
     };
 
-    addComment(comment, parentID);
+    createComment(comment, parentID);
     setContent("");
   }
 
