@@ -7,7 +7,7 @@ import { Fragment, useState } from "react";
 // let user;
 
 export default function App() {
-  const [comments, addComments] = useState(
+  const [comments, setComments] = useState(
     () => JSON.parse(localStorage.getItem("comments")) || []
   );
   const [currentUser, setCurrentUser] = useState(
@@ -18,7 +18,7 @@ export default function App() {
   const [recipientName, setRecipientName] = useState("");
 
   function createComment(comment) {
-    addComments((comments) => [...comments, comment]);
+    setComments((comments) => [...comments, comment]);
   }
 
   function createReply(reply, id) {
@@ -28,7 +28,7 @@ export default function App() {
 
     parentID = parentID ? parentID?.id : id;
 
-    addComments(
+    setComments(
       comments.map((comment) =>
         comment.id === parentID
           ? { ...comment, replies: [...comment.replies, reply] }
@@ -39,7 +39,7 @@ export default function App() {
   }
 
   function editComment(id, content) {
-    addComments(
+    setComments(
       comments.map((comment) =>
         comment.id === id
           ? { ...comment, content }
@@ -68,7 +68,7 @@ export default function App() {
   function updateCommentVotes(evt, id) {
     const step = evt.target.classList.contains("btn-desc") ? -1 : 1;
 
-    addComments((comments) =>
+    setComments((comments) =>
       comments.map((comment) =>
         comment.id === id
           ? { ...comment, score: comment.score + step }
@@ -90,7 +90,7 @@ export default function App() {
       const data = await response.json();
 
       setCurrentUser(data.currentUser);
-      addComments(data.comments);
+      setComments(data.comments);
     }
 
     const storedData = JSON.parse(localStorage.getItem("comments"));
@@ -113,7 +113,7 @@ export default function App() {
 
   React.useEffect(
     function () {
-      addComments((comments) => [
+      setComments((comments) => [
         ...comments.sort((a, b) => b.score - a.score),
       ]);
     },
