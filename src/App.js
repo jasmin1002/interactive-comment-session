@@ -1,5 +1,5 @@
 import React from "react";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 
 // import data from "./data.json";
 
@@ -84,7 +84,7 @@ export default function App() {
     );
   }
 
-  React.useEffect(function () {
+  useEffect(function () {
     async function fetchData() {
       const response = await fetch("/data/data.json");
       const data = await response.json();
@@ -97,21 +97,21 @@ export default function App() {
     if (!storedData) fetchData();
   }, []);
 
-  React.useEffect(
+  useEffect(
     function () {
       localStorage.setItem("comments", JSON.stringify(comments));
     },
     [comments]
   );
 
-  React.useEffect(
+  useEffect(
     function () {
       localStorage.setItem("currentUser", JSON.stringify(currentUser));
     },
     [currentUser]
   );
 
-  React.useEffect(
+  useEffect(
     function () {
       setComments((comments) => [
         ...comments.sort((a, b) => b.score - a.score),
@@ -173,7 +173,7 @@ function CommentList({
     <ul className={`comment-list ${className ? className : ""}`}>
       {comments.map((comment) => (
         <React.Fragment key={comment.id}>
-          <Comment {...comment} comments={comments}>
+          <Comment comments={comments}>
             <CommentVoteScore
               score={comment.score}
               id={comment.id}
@@ -334,10 +334,10 @@ function CommentForm({ type, replyingTo, parentID, createComment }) {
   const [content, setContent] = useState("");
 
   function handleChange(evt) {
-    const res = evt.target.value.includes(`@${replyingTo}`)
+    const comment = evt.target.value.includes(`@${replyingTo}`)
       ? evt.target.value.split(" ").slice(1).join(" ")
       : evt.target.value;
-    setContent(res);
+    setContent(comment);
   }
 
   function handleSubmit(evt) {
@@ -418,6 +418,7 @@ function EditComment({ id, type, replyingTo, content, editComment }) {
   const [newContent, updateContent] = useState(
     type === "reply" ? `@${replyingTo} ${content}` : content
   );
+  const inputText = useRef("");
 
   function handleChange(evt) {
     updateContent(evt.target.value);
@@ -434,6 +435,12 @@ function EditComment({ id, type, replyingTo, content, editComment }) {
     );
   }
 
+  useEffect(function () {
+    const end = inputText.current.value.length;
+    inputText.current.setSelectionRange(end, end);
+    inputText.current.focus();
+  }, []);
+
   return (
     <form className="edit-comment" onSubmit={handleSubmit}>
       <textarea
@@ -441,6 +448,7 @@ function EditComment({ id, type, replyingTo, content, editComment }) {
         value={newContent}
         onChange={handleChange}
         placeholder="Add a comment..."
+        ref={inputText}
       />
       <button type="submit" className="btn btn-update">
         Update
