@@ -113,9 +113,11 @@ export default function App() {
 
   useEffect(
     function () {
-      setComments((comments) => [
-        ...comments.sort((a, b) => b.score - a.score),
-      ]);
+      /**Infinite renders */
+      // setComments((comments) => [
+      //   ...comments.sort((a, b) => b.score - a.score),
+      // ]);
+      setComments((comments) => comments.sort((a, b) => b.score - a.score));
     },
     [comments]
   );
